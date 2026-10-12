@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme.dart';
+import '../../main_navigation/screens/main_navigation_screen.dart';
 import '../../auth/login/screens/login_screen.dart';
+import '../../../services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,12 +19,22 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigateToNext() async {
-    await Future.delayed(const Duration(seconds: 2));
+    final startTime = DateTime.now();
+    await AuthService().init();
+    final elapsed = DateTime.now().difference(startTime);
+    if (elapsed.inMilliseconds < 1500) {
+      await Future.delayed(Duration(milliseconds: 1500 - elapsed.inMilliseconds));
+    }
+
     if (mounted) {
+      final nextScreen = AuthService().isAuthenticated
+          ? const MainNavigationScreen()
+          : const LoginScreen();
+
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
